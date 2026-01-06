@@ -14,7 +14,10 @@ body {
 }
 button {
   font-size: 18px;
-  padding: 10px 20px;
+  padding: 12px 25px;
+}
+canvas {
+  margin-top: 10px;
 }
 </style>
 </head>
@@ -22,10 +25,11 @@ button {
 <body>
 
 <h2>Marathi Speaking AI (Recorded Audio)</h2>
-<button onclick="init()">Start Camera</button>
+
+<button id="startBtn">▶ Start Camera</button>
 
 <div id="webcam-container"></div>
-<h3 id="result">---</h3>
+<h3 id="result">Waiting...</h3>
 
 <audio id="audioPlayer"></audio>
 
@@ -34,19 +38,30 @@ const URL = "https://teachablemachine.withgoogle.com/models/qNs3g87f3/";
 
 let model, webcam;
 let lastPlayed = "";
+let started = false;
 
-async function init() {
-  const modelURL = URL + "model.json";
-  const metadataURL = URL + "metadata.json";
+document.getElementById("startBtn").addEventListener("click", startApp);
 
-  model = await tmImage.load(modelURL, metadataURL);
+async function startApp() {
+  if (started) return;
+  started = true;
 
-  webcam = new tmImage.Webcam(300, 300, true); // camera flip ON
-  await webcam.setup();
-  await webcam.play();
+  try {
+    const modelURL = URL + "model.json";
+    const metadataURL = URL + "metadata.json";
 
-  document.getElementById("webcam-container").appendChild(webcam.canvas);
-  window.requestAnimationFrame(loop);
+    model = await tmImage.load(modelURL, metadataURL);
+
+    webcam = new tmImage.Webcam(300, 300, true); // flip ON
+    await webcam.setup({ facingMode: "user" });
+    await webcam.play();
+
+    document.getElementById("webcam-container").appendChild(webcam.canvas);
+    window.requestAnimationFrame(loop);
+  } catch (e) {
+    alert("Camera error. Refresh page and click Start Camera again.");
+    console.error(e);
+  }
 }
 
 async function loop() {
@@ -71,7 +86,7 @@ async function predict() {
 function playAudio(label) {
   const audio = document.getElementById("audioPlayer");
   audio.src = "audio/" + label + ".mp3";
-  audio.play();
+  audio.play().catch(() => {});
 }
 </script>
 
