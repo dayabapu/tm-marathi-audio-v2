@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>TM Marathi Audio AI</title>
+
+<script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@latest"></script>
+<script src="https://cdn.jsdelivr.net/npm/@teachablemachine/image@latest"></script>
+
+<style>
+body {
+  text-align: center;
+  font-family: Arial;
+}
+button {
+  font-size: 18px;
+  padding: 10px 20px;
+}
+</style>
+</head>
+
+<body>
+
+<h2>Marathi Speaking AI (Recorded Audio)</h2>
+<button onclick="init()">Start Camera</button>
+
+<div id="webcam-container"></div>
+<h3 id="result">---</h3>
+
+<audio id="audioPlayer"></audio>
+
+<script>
+const URL = "https://teachablemachine.withgoogle.com/models/qNs3g87f3/";
+
+let model, webcam;
+let lastPlayed = "";
+
+async function init() {
+  const modelURL = URL + "model.json";
+  const metadataURL = URL + "metadata.json";
+
+  model = await tmImage.load(modelURL, metadataURL);
+
+  webcam = new tmImage.Webcam(300, 300, true); // camera flip ON
+  await webcam.setup();
+  await webcam.play();
+
+  document.getElementById("webcam-container").appendChild(webcam.canvas);
+  window.requestAnimationFrame(loop);
+}
+
+async function loop() {
+  webcam.update();
+  await predict();
+  window.requestAnimationFrame(loop);
+}
+
+async function predict() {
+  const prediction = await model.predict(webcam.canvas);
+  prediction.sort((a, b) => b.probability - a.probability);
+
+  const label = prediction[0].className;
+  document.getElementById("result").innerText = label;
+
+  if (label !== lastPlayed) {
+    playAudio(label);
+    lastPlayed = label;
+  }
+}
+
+function playAudio(label) {
+  const audio = document.getElementById("audioPlayer");
+  audio.src = "audio/" + label + ".mp3";
+  audio.play();
+}
+</script>
+
+</body>
+</html>
