@@ -52,14 +52,16 @@ async function startApp() {
 
     model = await tmImage.load(modelURL, metadataURL);
 
-    webcam = new tmImage.Webcam(300, 300, true); // flip ON
-    await webcam.setup({ facingMode: "user" });
+    // ✅ CAMERA SETUP (FIXED)
+    webcam = new tmImage.Webcam(300, 300, true); // true = flip camera
+    await webcam.setup();     // ❗ NO parameters
     await webcam.play();
 
     document.getElementById("webcam-container").appendChild(webcam.canvas);
     window.requestAnimationFrame(loop);
+
   } catch (e) {
-    alert("Camera error. Refresh page and click Start Camera again.");
+    alert("Camera error. Please refresh and click Start Camera again.");
     console.error(e);
   }
 }
